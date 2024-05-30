@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Button, Input, Slider, ConfigProvider, Modal, Radio, Checkbox } from 'antd'
+import { Button, Input, Slider, ConfigProvider, Modal, Radio, Checkbox, Spin, Flex} from 'antd'
+import { LoadingOutlined } from '@ant-design/icons';
 import Logo from './assets/logo.svg'
 import { Send, X } from 'lucide-react'
+import axios from 'axios'
 
 function App() {
   const primaryColor = '#A53420'
@@ -10,7 +12,8 @@ function App() {
   const [tags, setTags] = useState([]) // Tags for the ingredients
   const [inputValue, setInputValue] = useState('') // Value of the input
   const [timeValue, setTimeValue] = useState(60) // Value of the slider [30, 120]
-  const [isDisabled, setIsDisabled] = useState(true) // Button disabled [true, false
+  const [isDisabled, setIsDisabled] = useState(true) // Button disabled [true, false]
+  const [isLoading, setIsLoading] = useState(false) // Loading state [true, false]
 
   // Modal options
   const [isModalVisible, setIsModalVisible] = useState('')
@@ -28,7 +31,13 @@ function App() {
   })
 
 
+  // const openAIEndpoint = 'https://api.openai.com/v1/engines/davinci-codex/completions';
+  const openAIEndpoint = 'https://api.openai.com/v1/completions';
+  const maxTokens = 10;
+
+
   // ------------- Functions ------------- //
+
   const handleAddTag = () => {
     if (inputValue.trim() !== '') {
       setTags([...tags, inputValue])
@@ -63,11 +72,79 @@ function App() {
   };
 
 
+  // ------------- API Request ------------- //
+
+  const generateRecipeString = () => {
+    let recipeString = `
+      You are a professional cooker, your job is to create around 3 to 5 recipes but no more than 5, it is very important that you try to use only the ingredients detailed below, and follow any recipe restriction written down below.
+      These are its main requirements:
+      Ingredients: ${tags.join(', ')}
+      Meal Type: ${selectedValues.tipo}
+      Restrictions: ${selectedValues.restricao.join(', ')}
+      Challenge Level: ${selectedValues.dificuldade}
+      Cuisine: ${selectedValues.cozinha}
+      Time to make the recipe: ${timeValue} minutes
+      
+      Please write the recipes like that:
+      
+      RECIPE NAME
+      
+      Ingredients:
+      INGREDIENT A - QUANTITY
+      INGREDIENT B - QUANTITY
+      ETC...
+      
+      Method of Preparation:
+      STEP A
+      STEP B
+    `;
+    
+      return recipeString;
+  };
+
+  const sendRequest = () => {
+    setIsLoading(true)
+    let recipeString = generateRecipeString() // Generates the recipe string
+
+    console.log(import.meta.env.VITE_OPENAI_API_KEY)
+
+    // Calls the GPT API
+    const response = axios.post(
+      openAIEndpoint,
+      {
+        prompt: recipeString,
+        max_tokens: maxTokens,
+        model: 'gpt-3.5-turbo',
+        temperature: 0,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        console.log(response.data.choices[0].text);
+      })
+      .catch(error => {
+        console.error(error);
+        alert("Erro ao buscar receita, tente novamente.")
+        setIsLoading(false)
+      });
+    
+  }
+
+
+
+
+  // ------------- Use Effects ------------- //
+  
   useEffect(() => {
     setIsDisabled(tags.length === 0)
   }, [tags])
   
 
+  // ------------- Render ------------- //
   return (
     // Provider is used to change the color of the little dot on the slider (it was a really bad blue :T)
     <ConfigProvider
@@ -85,6 +162,11 @@ function App() {
             colorPrimary: primaryColor,
             colorPrimaryBorder: primaryColor,
             colorPrimaryHover: primaryColor,
+          },
+          Spin: {
+            colorPrimary: primaryWhite,
+            colorPrimaryBorder: primaryWhite,
+            colorPrimaryHover: primaryWhite,
           }
         },
       }}
@@ -183,11 +265,11 @@ function App() {
 
           {/* Button */}
           <Button
-            style={{height: 125, backgroundColor: isDisabled ? '#AAAAAA' : primaryColor, fontSize: 64, marginTop: 50, fontWeight: 'bold', color: primaryWhite, borderRadius: 16, border: 'none', paddingLeft: 80, paddingRight: 80}}
-            onClick={() => console.log('clicked')}
-            disabled={isDisabled}
+            style={{height: 125, backgroundColor: (isDisabled || isLoading) ? '#AAAAAA' : primaryColor, fontSize: 64, marginTop: 50, fontWeight: 'bold', color: primaryWhite, borderRadius: 16, border: 'none', paddingLeft: 80, paddingRight: 80}}
+            onClick={() => sendRequest()}
+            disabled={isDisabled || isLoading}
           >
-            Gerar
+            {isLoading ? <Flex align="center" gap="middle"><Spin indicator={<LoadingOutlined style={{ fontSize: 64 }} spin />} /></Flex> : 'Buscar'}
           </Button>
 
         </div>
