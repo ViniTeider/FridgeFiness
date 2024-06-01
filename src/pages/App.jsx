@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Input, Slider, ConfigProvider, Modal, Radio, Checkbox, Spin, Flex} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons';
-import Logo from './assets/logo.svg'
+import Logo from '../assets/logo.svg'
 import { Send, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
@@ -107,7 +107,7 @@ function App() {
         setIsLoading(false)
         // console.log(response.data.choices[0].message.content);
         let api_response = JSON.parse(response.data.choices[0].message.content.replace(/\n/g, ''))
-        navigate('/recipe', { state: { api_response } });
+        navigate('/vite-react-router/recipe', { state: { api_response } });
       })
       .catch(error => {
         console.error(error);

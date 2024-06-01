@@ -1,20 +1,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
+import App from './pages/App.jsx'
+import Recipe from './pages/recipe.jsx';
 import './index.css'
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Recipe from './recipe.jsx';
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/vite-react-router/",
     element: <App />,
   },
   {
-    path: "/recipe",
+    path: "/vite-react-router/recipe",
     element: <Recipe />,
   },
 ]);
