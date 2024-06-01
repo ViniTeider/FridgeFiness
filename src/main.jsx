@@ -11,11 +11,11 @@ import Recipe from './recipe.jsx';
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <App basename="/" />,
   },
   {
     path: "/recipe",
-    element: <Recipe />,
+    element: <Recipe basename="/recipe" />,
   },
 ]);
 
