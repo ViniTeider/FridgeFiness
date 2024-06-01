@@ -69,7 +69,13 @@ function Recipe() {
                                             Modo de preparo
                                         </h1>
                                         <p style={{textAlign: 'left', fontSize: 16, color: textColor, marginBottom: 20}}>
-                                            {selectedRecipe.methodOfPreparation}
+                                            {selectedRecipe.methodOfPreparation.split(/\d+\./).map((instruction, index) => {
+                                                if (index !== 0) {
+                                                    return <>{index}. {instruction}<br/></>
+                                                } else {
+                                                    return <>{instruction}</>
+                                                }
+                                            })}
                                         </p>
                                     </>
                                 ) : (
