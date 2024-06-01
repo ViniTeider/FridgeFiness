@@ -3,9 +3,11 @@ import { Button, Input, Slider, ConfigProvider, Modal, Radio, Checkbox, Spin, Fl
 import { LoadingOutlined } from '@ant-design/icons';
 import Logo from './assets/logo.svg'
 import { Send, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
 
 function App() {
+  const navigate = useNavigate();
   const primaryColor = '#A53420'
   const primaryWhite = '#F0F0F0'
 
@@ -32,8 +34,7 @@ function App() {
 
 
   // const openAIEndpoint = 'https://api.openai.com/v1/engines/davinci-codex/completions';
-  const openAIEndpoint = 'https://api.openai.com/v1/completions';
-  const maxTokens = 10;
+  const openAIEndpoint = 'https://api.openai.com/v1/chat/completions';
 
 
   // ------------- Functions ------------- //
@@ -75,30 +76,7 @@ function App() {
   // ------------- API Request ------------- //
 
   const generateRecipeString = () => {
-    let recipeString = `
-      You are a professional cooker, your job is to create around 3 to 5 recipes but no more than 5, it is very important that you try to use only the ingredients detailed below, and follow any recipe restriction written down below.
-      These are its main requirements:
-      Ingredients: ${tags.join(', ')}
-      Meal Type: ${selectedValues.tipo}
-      Restrictions: ${selectedValues.restricao.join(', ')}
-      Challenge Level: ${selectedValues.dificuldade}
-      Cuisine: ${selectedValues.cozinha}
-      Time to make the recipe: ${timeValue} minutes
-      
-      Please write the recipes like that:
-      
-      RECIPE NAME
-      
-      Ingredients:
-      INGREDIENT A - QUANTITY
-      INGREDIENT B - QUANTITY
-      ETC...
-      
-      Method of Preparation:
-      STEP A
-      STEP B
-    `;
-    
+    let recipeString = `You are a professional cooker, your job is to create around 3 to 5 recipes but no more than 5, it is very important that you try to use only the ingredients detailed below, and follow any recipe restriction written down below. These are its main requirements: Ingredients: ${tags.join(', ')} Meal Type: ${selectedValues.tipo} Restrictions: ${selectedValues.restricao.join(', ')} Challenge Level: ${selectedValues.dificuldade} Cuisine: ${selectedValues.cozinha} Time to make the recipe: ${timeValue} minutes Please write the recipes like that: RECIPE NAME Ingredients: INGREDIENT A - QUANTITY INGREDIENT B - QUANTITY ETC... Method of Preparation: STEP A STEP B You need to return me this on a json format on the Brazilian Portuguese language. The json must be on a format must have the following parameters: recipeName, ingredients, shortDescription, methodOfPreparation for each one of the 5 recipes you will create.`
       return recipeString;
   };
 
@@ -106,15 +84,17 @@ function App() {
     setIsLoading(true)
     let recipeString = generateRecipeString() // Generates the recipe string
 
-    console.log(import.meta.env.VITE_OPENAI_API_KEY)
-
     // Calls the GPT API
     const response = axios.post(
       openAIEndpoint,
       {
-        prompt: recipeString,
-        max_tokens: maxTokens,
         model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            "role": "user",
+            "content": recipeString
+          }
+        ],
         temperature: 0,
       },
       {
@@ -124,7 +104,10 @@ function App() {
         }
       })
       .then(response => {
-        console.log(response.data.choices[0].text);
+        setIsLoading(false)
+        // console.log(response.data.choices[0].message.content);
+        let api_response = JSON.parse(response.data.choices[0].message.content.replace(/\n/g, ''))
+        navigate('/recipe', { state: { api_response } });
       })
       .catch(error => {
         console.error(error);
@@ -231,6 +214,7 @@ function App() {
             {tags.map((tag, index) => (
               <>
                 <Button
+                  key={index}
                   style={{height: 28,flexDirection: 'row', backgroundColor: '#E45250', fontSize: 12, marginRight: 13, marginTop: 8, fontWeight: 'bold', color: primaryWhite, borderRadius: 8, border: 'none', paddingLeft: 6, paddingRight: 6, justifyContent: 'center', alignItems: 'center'}}
                   onClick={() => handleDeleteTag(index)}
                 >
