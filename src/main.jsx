@@ -1,20 +1,21 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
+import App from './pages/App.jsx'
+import Recipe from './pages/recipe.jsx'
 import './index.css'
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Recipe from './recipe.jsx';
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/FridgeFiness/",
     element: <App />,
   },
   {
-    path: "/recipe",
+    path: "recipe",
+    basename: "/recipe",
     element: <Recipe />,
   },
 ]);
