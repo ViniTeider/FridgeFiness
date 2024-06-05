@@ -1,5 +1,4 @@
 import Logo from '../assets/logo.svg'
-import { ConfigProvider} from 'antd'
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -15,11 +14,11 @@ function Recipe() {
     const textColor = '#333333'
 
 
-    useState(() => {
+    useEffect(() => {
         if (api_response.recipes) setIsLoading(false)
     }, [api_response])
 
-    useState(() => {
+    useEffect(() => {
         console.log(selectedRecipe)
     }, [selectedRecipe])
 
